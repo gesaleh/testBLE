@@ -30,15 +30,14 @@ float voltage = 0;
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
 
-#define aqServiceUUID        0xCCC0
-#define allUUID 0xCCC1
-#define nh3UUID 0xCCCa
-#define coUUID  0xCCC2
-#define no2UUID 0xCCC3
-#define c3h8UUID 0xCCC4
-#define c4h10UUID 0xCCC5
-#define ch4UUID 0xCCC6
-#define h2UUID 0xCCC6
+#define aqServiceUUID        0x181A
+#define nh3UUID 0x2A61
+#define coUUID  0x2A62
+#define no2UUID 0x2A63
+#define c3h8UUID 0x2A64
+#define c4h10UUID 0x2A65
+#define ch4UUID 0x2A66
+#define h2UUID 0x2A67
 //
 #define aqService2UUID 0xDDD0
 #define c2h5ohUUID 0xDDD1
@@ -125,7 +124,7 @@ BLECharacteristic nh3Characteristic(BLEUUID((uint16_t)nh3UUID), BLECharacteristi
 BLECharacteristic coCharacteristic(BLEUUID((uint16_t)coUUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic no2Characteristic(BLEUUID((uint16_t)no2UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic c3h8Characteristic(BLEUUID((uint16_t)c3h8UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-BLECharacteristic c4h10Characteristic(BLEUUID((uint16_t)ch4UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+BLECharacteristic c4h10Characteristic(BLEUUID((uint16_t)c4h10UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic ch4Characteristic(BLEUUID((uint16_t)ch4UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic h2Characteristic(BLEUUID((uint16_t)h2UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic c2h5ohCharacteristic(BLEUUID((uint16_t)c2h5ohUUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
