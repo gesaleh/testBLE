@@ -53,23 +53,43 @@ float voltage = 0;
 #define switchUUID "19b10001-e8f2-537e-4f6c-d104768a1214"
 #define calibUUID "19b10001-e8f2-537e-4f6c-d104768a1215"
 
+volatile bool readFromSensor = true;
+volatile bool readFromSensor2 = false;
+volatile bool readFromSensor3 = false;
+volatile bool readFromSensor4 = false;
+
 
 class switchCharacteristicWritten: public BLECharacteristicCallbacks {
+    void timerHandler() {
+      readFromSensor = true;
+    }
+
+    void timer2Handler() {
+      readFromSensor2 = true;
+    }
+
+    void timer3Handler() {
+      readFromSensor3 = true;
+    }
+    void timer4Handler() {
+      readFromSensor4 = true;
+    }
+
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
-      
+
       String strValue = "";
-      
+
       if (value.length() > 0) {
         Serial.println("*********");
         Serial.print("New value: ");
         for (int i = 0; i < value.length(); i++) {
-            Serial.print(String(value[i]));
-            strValue += value[i];
-          }   
+          Serial.print(String(value[i]));
+          strValue += value[i];
+        }
         Serial.println();
         Serial.println("*********");
-        
+
         if ( strValue == "1" ) {
           timerHandler();
         }
@@ -97,8 +117,10 @@ BLEDescriptor h2Descriptor(BLEUUID((uint16_t)0x2901));
 BLEDescriptor c2h5ohDescriptor(BLEUUID((uint16_t)0x2901));
 BLEDescriptor tempDescriptor(BLEUUID((uint16_t)0x2901));
 BLEDescriptor humDescriptor(BLEUUID((uint16_t)0x2901));
+//BLEDescriptor power1Descriptor(BLEUUID((uint16_t)0x2901));
+//BLEDescriptor power2Descriptor(BLEUUID((uint16_t)0x2901));
 
-
+//BLECharacteristic allCharacteristic(BLEUUID((uint16_t)allUUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic nh3Characteristic(BLEUUID((uint16_t)nh3UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic coCharacteristic(BLEUUID((uint16_t)coUUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic no2Characteristic(BLEUUID((uint16_t)no2UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
@@ -109,14 +131,13 @@ BLECharacteristic h2Characteristic(BLEUUID((uint16_t)h2UUID), BLECharacteristic:
 BLECharacteristic c2h5ohCharacteristic(BLEUUID((uint16_t)c2h5ohUUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic tempCharacteristic(BLEUUID((uint16_t)tempUUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic humCharacteristic(BLEUUID((uint16_t)humUUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+//BLECharacteristic power1Characteristic(BLEUUID((uint16_t)power1UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+//BLECharacteristic power2Characteristic(BLEUUID((uint16_t)power2UUID), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 BLECharacteristic switchCharacteristic(switchUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 BLECharacteristic calibCharacteristic(calibUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
 
-volatile bool readFromSensor = true;
-volatile bool readFromSensor2 = false;
-volatile bool readFromSensor3 = false;
-volatile bool readFromSensor4 = false;
+
 
 float lastTempReading;
 float lastHumidityReading;
@@ -141,6 +162,7 @@ void setup() {
   BLEService *pService = pServer->createService(BLEUUID((uint16_t)aqServiceUUID));
   Serial.println("Starting BLE work!");
 
+  //allDescriptor.setValue("All");
   nh3Descriptor.setValue("NH3");
   coDescriptor.setValue("CO");
   no2Descriptor.setValue("NO2");
@@ -151,6 +173,8 @@ void setup() {
   c2h5ohDescriptor.setValue("C2H5OH");
   tempDescriptor.setValue("temp");
   humCharacteristic.setValue("hum");
+  //power1Descriptor.setValue("current");
+  //power2Descriptor.setValue("power");
 
 
   //allCharacteristic.addDescriptor(&allDescriptor);
@@ -164,9 +188,12 @@ void setup() {
   c2h5ohCharacteristic.addDescriptor(&c2h5ohDescriptor);
   tempCharacteristic.addDescriptor(&tempDescriptor);
   humCharacteristic.addDescriptor(&humDescriptor);
+  //power1Characteristic.addDescriptor(&power1Descriptor);
+  //power2Characteristic.addDescriptor(&power2Descriptor);
 
   // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
   // Create a BLE Descriptor
+  //allCharacteristic.addDescriptor(new BLE2902());
   nh3Characteristic.addDescriptor(new BLE2902());
   coCharacteristic.addDescriptor(new BLE2902());
   no2Characteristic.addDescriptor(new BLE2902());
@@ -177,6 +204,8 @@ void setup() {
   c2h5ohCharacteristic.addDescriptor(new BLE2902());
   tempCharacteristic.addDescriptor(new BLE2902());
   humCharacteristic.addDescriptor(new BLE2902());
+  //power1Characteristic.addDescriptor(new BLE2902());
+  //power2Characteristic.addDescriptor(new BLE2902());
   switchCharacteristic.addDescriptor(new BLE2902());
   //calibCharacteristic.addDescriptor(new BLE2902());
 
@@ -194,6 +223,9 @@ void setup() {
   pService->addCharacteristic(&c2h5ohCharacteristic);
   pService->addCharacteristic(&tempCharacteristic);
   pService->addCharacteristic(&humCharacteristic);
+
+  //pService->addCharacteristic(&power1Characteristic);
+  //pService->addCharacteristic(&power2Characteristic);
 
   pService->addCharacteristic(&switchCharacteristic);
   //pService->addCharacteristic(&calibCharacteristic);
@@ -247,12 +279,6 @@ void getallVal() {
   a = gas.measure_C2H5OH();
   r += String(a) + ",";
   Serial.print(r);
-  //  char *b ;
-  //  b  = string2char(r);
-  //  allCharacteristic.setValue(b);
-  //   char b[20] ;
-  //  r.toCharArray(b, 20);
-  //  allCharacteristic.setValue((unsigned char*)b);
 }
 
 void calibrate() {
@@ -272,7 +298,30 @@ void calibrate() {
 }
 
 void setPowerVal() {
-
+  //  double Irms = emon1.calcIrms(1480);  // Calculate Irms only
+  //  double Power = Irms * 230.0 / 1000;
+  //  uint8_t tempData[2];
+  //  uint16_t tempValue;
+  //  // multiply by 100 to get 2 digits mantissa and convert into uint16_t
+  //  tempValue = (uint16_t)(Irms * 100);
+  //  // set  LSB of characteristic
+  //  tempData[0] = tempValue;
+  //  // set MSB of characteristic
+  //  tempData[1] = tempValue >> 8;
+  ////  power1Characteristic.setValue(tempData, 2);
+  //  // multiply by 100 to get 2 digits mantissa and convert into uint16_t
+  //  tempValue = (uint16_t)(Power * 100);
+  //  // set  LSB of characteristic
+  //  tempData[0] = tempValue;
+  //  // set MSB of characteristic
+  //  tempData[1] = tempValue >> 8;
+  //  //power2Characteristic.setValue(tempData, 2);
+  //  power1Characteristic.notify();
+  //  power2Characteristic.notify();
+  //  Serial.print("I: "); Serial.print(Irms); Serial.println();
+  //  Serial.print("P: "); Serial.print(Power); Serial.println();
+  //  //emon1.calcVI(20,2000);         // Calculate all. No.of wavelengths, time-out
+  //  //emon1.serialprint();           // Print out all variables
 }
 
 void setTempHumVal() {
@@ -291,6 +340,8 @@ void setTempHumVal() {
   // set MSB of characteristic
   tempData[1] = tempValue >> 8;
   tempCharacteristic.setValue(tempData, 2);
+    Serial.print("T: "); Serial.print(t); Serial.println();
+
   tempValue = (uint16_t)(h * 100);
   // set  LSB of characteristic
   tempData[0] = tempValue;
@@ -299,7 +350,6 @@ void setTempHumVal() {
   humCharacteristic.setValue(tempData, 2);
   tempCharacteristic.notify();
   humCharacteristic.notify();
-  Serial.print("T: "); Serial.print(t); Serial.println();
   Serial.print("H: "); Serial.print(h); Serial.println();
 }
 void setNH3CharacteristicValue() {
@@ -461,6 +511,7 @@ boolean significantChange(float val1, float val2, float threshold) {
 void loop() {
   // put your main code here, to run repeatedly:
   if (readFromSensor) {
+    //getallVal();
     digitalWrite(LED_PIN, HIGH);
     setNH3CharacteristicValue();
     setCOCharacteristicValue();
@@ -477,6 +528,7 @@ void loop() {
     setCH4CharacteristicValue();
     setH2CharacteristicValue();
     setC2H5OHCharacteristicValue();
+    // setEMPTYCharacteristicValue();
     setTempHumVal();
     readFromSensor2 = false;
     delay(10000);
@@ -529,20 +581,7 @@ void loop() {
 //  }
 //}
 
-void timerHandler() {
-  readFromSensor = true;
-}
 
-void timer2Handler() {
-  readFromSensor2 = true;
-}
-
-void timer3Handler() {
-  readFromSensor3 = true;
-}
-void timer4Handler() {
-  readFromSensor4 = true;
-}
 char* string2char(String command) {
   if (command.length() != 0) {
     char *p = const_cast<char*>(command.c_str());
